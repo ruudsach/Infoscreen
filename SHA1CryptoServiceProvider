@@ -1,0 +1,95 @@
+Sub RefreshInfoscreenStatusTable()
+    ActiveWorkbook.XmlMaps("InfoscreenStatus").DataBinding.Refresh
+End Sub
+Sub importXmlFromWeb()
+'
+' importXmlFromWeb Macro
+'
+
+'
+    ActiveWorkbook.XmlMaps("root_Map1").Name = "InfoscreenStatus"
+    With ActiveWorkbook.XmlMaps("InfoscreenStatus")
+        .ShowImportExportValidationErrors = False
+        .AdjustColumnWidth = False
+        .PreserveColumnFilter = True
+        .PreserveNumberFormatting = True
+        .AppendOnImport = False
+    End With
+    ActiveWorkbook.XmlImport URL:= _
+'' deleted this line for security purpose
+        , ImportMap:=Nothing, Overwrite:=True, Destination:=Range("$A$1")
+    Columns("A:A").ColumnWidth = 50
+    Columns("B:B").ColumnWidth = 14
+    Columns("C:C").ColumnWidth = 50
+    Columns("D:D").ColumnWidth = 30
+    Range("A2").Select
+End Sub
+Sub ChangingTableFormat()
+'
+' ChangingTableFormat Macro
+'
+
+'
+    ActiveSheet.ListObjects("Table2").TableStyle = "TableStyleLight8"
+    With ActiveWorkbook.Connections("Connection1")
+        .Name = "Infoscreen Status Connecion"
+        .Description = ""
+    End With
+    ActiveWorkbook.Connections("Infoscreen Status Connecion").Refresh
+    With ActiveWorkbook.Connections("Infoscreen Status Connecion")
+        .Name = "Infoscreen Status Connecion"
+        .Description = _
+        "This is the web connection returning xml data -" & Chr(13) & "" & Chr(10) & "" & Chr(13) & "" & Chr(10) & _
+'' deleted this line for security purpose
+    End With
+
+End Sub
+
+Sub somemacro()
+    Dim PcName As String
+    PcName = "vd02454"
+    Dim shell As Object
+    Set shell = CreateObject("Wscript.Shell")
+    Dim retval
+    retval = shell.Run("powershell.exe -ExecutionPolicy Unrestricted G:\C\Checkpoint\Log\Documentation_ETC\Win7_Get_password_client\Get_Display_Computer_FunctionKey.ps1 " & PcName, , True)
+End Sub
+Public Sub hostname()
+    Dim RDPWindow
+    Dim Infoscreen As String
+    Dim f_key As String
+    Dim fKey_password As String
+    Infoscreen = ActiveCell.Offset(0, 2 - ActiveCell.Column).Value
+    f_key = "f_" & VBA.LCase(Infoscreen)
+    fKey_password = Typical(ActiveCell.Offset(0, 2 - ActiveCell.Column))
+    RDPWindow = shell("cmdkey /generic:TERMSRV/" & Infoscreen & " /user:" & f_key & " /pass:" & fKey_password)
+    RDPWindow = shell("C:\windows\system32\mstsc.exe /admin /v:" & Infoscreen, 1)
+    Application.Wait (Now + TimeValue("0:00:02"))
+    RDPWindow = shell("cmdkey /delete:TERMSRV/" & Infoscreen)
+    Set RDPWindow = Nothing
+End Sub
+
+
+Public Function Typical(InputRange As Range) As String
+   Dim InputString As String
+   InputString = InputRange.Value
+   Dim b() As Byte
+   Dim asc As Object
+   Dim enc As Object
+   Set asc = CreateObject("System.Text.UnicodeEncoding")
+   Set enc = CreateObject("System.Security.Cryptography.SHA1CryptoServiceProvider")
+   b = asc.Getbytes_4(LCase(InputString))
+   Dim bytes() As Byte
+   bytes = enc.ComputeHash_2((b))
+   Typical = ByteArrayToHex(bytes) & "-Ty6?"
+   Debug.Print Typical
+End Function
+
+Private Function ByteArrayToHex(ByRef ByteArray As Variant) As String
+    Dim l As Long, strRet As String
+    For l = LBound(ByteArray) To UBound(ByteArray)
+        strRet = strRet & IIf(Len(Hex$(ByteArray(l))) = 1, "0" & Hex$(ByteArray(l)), Hex$(ByteArray(l))) ''Hex$(ByteArray(l)) '& ""
+    Next l
+    'Remove last space at end.
+    ByteArrayToHex = Left$(strRet, Len(strRet))
+End Function
+
